@@ -1,93 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico GPS AR</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR por ubicación - LocAR.js</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 10;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    #overlay h3 {
+      margin: 0 0 6px 0;
+      font-size: 16px;
+    }
+    #legend {
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 6px;
+    }
+    #startBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      padding: 16px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #0070f3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
 
-        button {
-            padding: 15px;
-            margin: 5px;
-            font-size: 16px;
-        }
-
-        video {
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        #info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #eeeeee;
-        }
-    </style>
+  <!-- Mapeo de librerías imprescindible para el navegador -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "locar": "https://unpkg.com/locar@0.0.6/dist/locar.modern.js"
+    }
+  }
+  </script>
 </head>
-
 <body>
-    <h2>Prueba de GPS y cámara</h2>
+  <button id="startBtn">INICIAR AR</button>
 
-    <button onclick="activarCamara()">Activar cámara</button>
-    <button onclick="obtenerGPS()">Obtener ubicación</button>
+  <div id="overlay" style="display: none;">
+    <h3>AR por ubicación — Router TI</h3>
+    <div id="gps">Buscando señal GPS...</div>
+    <div id="status">Presiona INICIAR AR</div>
+    <div id="legend">
+      Calibración: rojo=Norte, amarillo=Sur, celeste=Oeste, verde=Este.<br/>
+      El modelo 3D representa el Laboratorio de Redes.
+    </div>
+  </div>
 
-    <div id="info">Esperando...</div>
+  <canvas id="cameraCanvas"></canvas>
 
-    <video id="video" autoplay playsinline></video>
-
-    <script>
-        async function activarCamara() {
-            const info = document.getElementById("info");
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: "environment" }
-                    }
-                });
-
-                document.getElementById("video").srcObject = stream;
-                info.innerHTML = "✅ Cámara funcionando correctamente.";
-            } catch (error) {
-                info.innerHTML = "❌ Error de cámara: " + error.name + "<br>" + error.message;
-            }
-        }
-
-        function obtenerGPS() {
-            const info = document.getElementById("info");
-
-            if (!navigator.geolocation) {
-                info.innerHTML = "❌ Geolocalización no disponible.";
-                return;
-            }
-
-            info.innerHTML = "Buscando ubicación...";
-
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const latitudFija = -2.288507;
-                    const longitudFija = -78.116955;
-
-                    info.innerHTML = 
-                        "✅ GPS funcionando" +
-                        "<br><br>Latitud: " + latitudFija +
-                        "<br>Longitud: " + longitudFija +
-                        "<br>Precisión: " + position.coords.accuracy + " metros";
-                },
-                function(error) {
-                    info.innerHTML = "❌ Error GPS: " + error.code + "<br>" + error.message;
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 20000,
-                    maximumAge: 0
-                }
-            );
-        }
-    </script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
