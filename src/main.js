@@ -7,8 +7,8 @@ const App = LocAR.App || LocAR.default?.App || LocAR.default;
 
 // COORDENADA OBJETIVO: a ~10 metros al norte de tu posición
 const TARGET = {
-  lat: -2.288417,
-  lon: -78.116955,
+  lat: -2.288423,
+  lon: -78.116956,
   name: "LABORATORIO DE REDES"
 };
 
