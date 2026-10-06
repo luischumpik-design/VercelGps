@@ -9,8 +9,8 @@ const App = LocAR.App || LocAR.default?.App || LocAR.default;
 // 1. COORDENADA OBJETIVO (Donde aparecerá el Router)
 // ==========================================
 const TARGET = {
-  lat: -2.299114,
-  lon: -78.118125,
+  lat: -2.288417,
+  lon: -78.116955,
   name: "LABORATORIO DE REDES"
 };
 
