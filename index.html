@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico GPS AR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        button {
+            padding: 15px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        video {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eeeeee;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Prueba de GPS y cámara</h2>
+
+    <button onclick="activarCamara()">Activar cámara</button>
+    <button onclick="obtenerGPS()">Obtener ubicación</button>
+
+    <div id="info">Esperando...</div>
+
+    <video id="video" autoplay playsinline></video>
+
+    <script>
+        async function activarCamara() {
+            const info = document.getElementById("info");
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: "environment" }
+                    }
+                });
+
+                document.getElementById("video").srcObject = stream;
+                info.innerHTML = "✅ Cámara funcionando correctamente.";
+            } catch (error) {
+                info.innerHTML = "❌ Error de cámara: " + error.name + "<br>" + error.message;
+            }
+        }
+
+        function obtenerGPS() {
+            const info = document.getElementById("info");
+
+            if (!navigator.geolocation) {
+                info.innerHTML = "❌ Geolocalización no disponible.";
+                return;
+            }
+
+            info.innerHTML = "Buscando ubicación...";
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const latitudFija = -2.288507;
+                    const longitudFija = -78.116955;
+
+                    info.innerHTML = 
+                        "✅ GPS funcionando" +
+                        "<br><br>Latitud: " + latitudFija +
+                        "<br>Longitud: " + longitudFija +
+                        "<br>Precisión: " + position.coords.accuracy + " metros";
+                },
+                function(error) {
+                    info.innerHTML = "❌ Error GPS: " + error.code + "<br>" + error.message;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 20000,
+                    maximumAge: 0
+                }
+            );
+        }
+    </script>
+</body>
+</html>
