@@ -115,7 +115,7 @@ startBtn.addEventListener("click", async () => {
         // 2. Cargar el Router GLB + Etiqueta
         const loader = new GLTFLoader();
         loader.load(
-          "/public/models/router.glb",
+          "/models/router.glb",
           (gltf) => {
             const router = gltf.scene;
             router.scale.set(5, 5, 5);
