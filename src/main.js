@@ -91,6 +91,13 @@ startBtn.addEventListener("click", async () => {
     });
 
     locar = await app.start();
+    // 1. Agregar luces para que el modelo 3D no se vea negro
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+    locar.scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    dirLight.position.set(0, 20, 10);
+    locar.scene.add(dirLight);
     statusText.innerText = "Obteniendo GPS... Espera la primera lectura.";
 
     let firstPosition = true;
