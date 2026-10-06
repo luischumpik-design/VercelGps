@@ -5,9 +5,7 @@ import * as LocAR from "locar";
 // Manejo seguro del export según la versión del bundle de LocAR
 const App = LocAR.App || LocAR.default?.App || LocAR.default;
 
-// ==========================================
-// 1. COORDENADA OBJETIVO (Donde aparecerá el Router)
-// ==========================================
+// COORDENADA OBJETIVO: a ~10 metros al norte de tu posición
 const TARGET = {
   lat: -2.288417,
   lon: -78.116955,
@@ -29,16 +27,13 @@ function createInfoLabel() {
   labelCanvas.height = 512;
   const ctx = labelCanvas.getContext("2d");
 
-  // Fondo semitransparente
   ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
   ctx.fillRect(0, 0, labelCanvas.width, labelCanvas.height);
 
-  // Borde verde
   ctx.strokeStyle = "#00FF00";
   ctx.lineWidth = 12;
   ctx.strokeRect(8, 8, labelCanvas.width - 16, labelCanvas.height - 16);
 
-  // Texto
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "center";
   ctx.font = "bold 72px Arial";
@@ -64,11 +59,10 @@ function createInfoLabel() {
 
   const sprite = new THREE.Sprite(material);
   sprite.scale.set(14, 7, 1);
-  sprite.position.set(0, 8, 0); // Altura sobre el router
+  sprite.position.set(0, 2, 0);
   return sprite;
 }
 
-// Función auxiliar para cubos de calibración cardinal
 function makeBox(color, size = 6) {
   const geom = new THREE.BoxGeometry(size, size, size);
   const mat = new THREE.MeshBasicMaterial({ color });
@@ -91,14 +85,18 @@ startBtn.addEventListener("click", async () => {
     });
 
     locar = await app.start();
-    // 1. Agregar luces para que el modelo 3D no se vea negro
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
-    locar.scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    dirLight.position.set(0, 20, 10);
-    locar.scene.add(dirLight);
-    statusText.innerText = "Obteniendo GPS... Espera la primera lectura.";
+    // Luces seguras
+    const activeScene = locar.scene || app.scene;
+    if (activeScene) {
+      const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+      activeScene.add(ambientLight);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+      dirLight.position.set(0, 10, 5);
+      activeScene.add(dirLight);
+    }
+
+    statusText.innerText = "Obteniendo GPS... Espera la primera señal.";
 
     let firstPosition = true;
 
@@ -110,22 +108,22 @@ startBtn.addEventListener("click", async () => {
 
       if (firstPosition) {
         firstPosition = false;
-        statusText.innerText = "GPS recibido. Cargando modelos...";
+        statusText.innerText = "GPS detectado. Cargando modelo 3D...";
 
-        // 1. Cubos de calibración cardinal (~30 metros alrededor)
+        // 1. Cubos de calibración (~30m)
         const d = 0.0003;
-        locar.add(makeBox(0xff0000, 4), coords.longitude, coords.latitude + d, 2); // Norte (Rojo)
-        locar.add(makeBox(0xffff00, 4), coords.longitude, coords.latitude - d, 2); // Sur (Amarillo)
-        locar.add(makeBox(0x00ffff, 4), coords.longitude - d, coords.latitude, 2); // Oeste (Celeste)
-        locar.add(makeBox(0x00ff00, 4), coords.longitude + d, coords.latitude, 2); // Este (Verde)
+        locar.add(makeBox(0xff0000, 4), coords.longitude, coords.latitude + d, 1); // Norte
+        locar.add(makeBox(0xffff00, 4), coords.longitude, coords.latitude - d, 1); // Sur
+        locar.add(makeBox(0x00ffff, 4), coords.longitude - d, coords.latitude, 1); // Oeste
+        locar.add(makeBox(0x00ff00, 4), coords.longitude + d, coords.latitude, 1); // Este
 
-        // 2. Cargar el Router GLB + Etiqueta
+        // 2. Cargar GLB + Etiqueta
         const loader = new GLTFLoader();
         loader.load(
           "/models/router.glb",
           (gltf) => {
             const router = gltf.scene;
-            router.scale.set(5, 5, 5);
+            router.scale.set(6, 6, 6);
 
             const label = createInfoLabel();
 
@@ -133,24 +131,24 @@ startBtn.addEventListener("click", async () => {
             routerGroup.add(router);
             routerGroup.add(label);
 
-            // Se coloca en la coordenada objetivo
-            locar.add(routerGroup, TARGET.lon, TARGET.lat, 5);
+            locar.add(routerGroup, TARGET.lon, TARGET.lat, 1);
 
-            statusText.innerText = "Router agregado. Gira lentamente hacia la ubicación objetivo.";
+            statusText.innerText = "✅ Router colocado en escena. Gira en 360° para buscarlo.";
           },
           undefined,
           (err) => {
-            console.error("Error al cargar router.glb, mostrando respaldo:", err);
+            console.error("Fallo al cargar router.glb:", err);
             const fallbackBox = makeBox(0xff00ff, 8);
-            locar.add(fallbackBox, TARGET.lon, TARGET.lat, 5);
-            statusText.innerText = "Router.glb no encontrado. Mostrando caja magenta de respaldo.";
+            locar.add(fallbackBox, TARGET.lon, TARGET.lat, 1);
+            statusText.innerText = "⚠️ router.glb no cargó (404). Se colocó cubo magenta.";
           }
         );
       }
     });
 
   } catch (err) {
-    statusText.innerText = "Error: " + err.message;
+    statusText.style.color = "#ff4444";
+    statusText.innerText = "❌ ERROR: " + err.message;
     console.error(err);
   }
 });
